@@ -1,6 +1,6 @@
 # Exact versions, tested together. Update deliberately, never automatically.
 Django==5.2.18
-cryptography==50.0.1
+cryptography==50.0.2
 argon2-cffi==25.1.0
 pdfplumber==0.11.10
 pdfminer.six==20260107
