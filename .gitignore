@@ -1,0 +1,14 @@
+# Your data lives outside this folder (see README). These guard against accidents anyway.
+*.pdf
+*.jpg
+*.jpeg
+*.png
+!static/*.png
+# Screenshots for the README. Take them in demo mode only, never with your own documents.
+!docs/screenshots/*.png
+*.sqlite3
+keys.json
+secret_key
+.env
+__pycache__/
+.venv/

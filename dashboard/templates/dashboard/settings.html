@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Settings · STASH{% endblock %}
+{% block content %}
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+{% if saved == "profile" %}<p class="notice">Greeting saved.</p>{% elif saved == "signature" %}<p class="notice">Signature saved.</p>{% endif %}
+
+<div class="split settings">
+  <form method="post" class="card">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="profile">
+    <h2>Greeting</h2>
+
+    <label class="field">
+      <span class="field-label">First name</span>
+      <input name="name" value="{{ profile.name }}" maxlength="60">
+    </label>
+
+    <fieldset class="options">
+      <legend class="field-label">How STASH greets you</legend>
+
+      <label class="opt">
+        <input type="radio" name="greeting_mode" value="auto" {% if profile.greeting_mode|default:"auto" == "auto" %}checked{% endif %}>
+        <span class="opt-body">
+          <span class="opt-title">From my country of citizenship</span>
+          <span class="opt-preview"><bdi lang="{{ auto_greeting.lang }}" dir="{{ auto_greeting.dir }}">{{ auto_greeting.text }}</bdi>{% if auto_greeting.text != auto_greeting.latin %}<span class="muted"> · {{ auto_greeting.latin }}</span>{% endif %}</span>
+          <span class="muted small">{% if profile.country %}Based on {{ profile.country|title }} from your I-20{% else %}Set automatically after you save an I-20{% endif %}</span>
+        </span>
+      </label>
+      <label class="check-row">
+        <input type="checkbox" name="native_script" {% if native_script %}checked{% endif %}>
+        <span>Write it in the language's own script</span>
+      </label>
+
+      <label class="opt">
+        <input type="radio" name="greeting_mode" value="custom" {% if profile.greeting_mode == "custom" %}checked{% endif %}>
+        <span class="opt-body">
+          <span class="opt-title">My own greeting</span>
+          <input name="greeting" value="{{ profile.greeting }}" maxlength="60" placeholder="e.g. Khush aamdeed">
+        </span>
+      </label>
+
+      <label class="opt">
+        <input type="radio" name="greeting_mode" value="off" {% if profile.greeting_mode == "off" %}checked{% endif %}>
+        <span class="opt-body"><span class="opt-title">Just say Hello</span></span>
+      </label>
+    </fieldset>
+
+    <div class="card-actions"><button class="btn primary" type="submit">Save greeting</button></div>
+  </form>
+
+  <div class="card">
+    <h2>Your signature</h2>
+    {% if signature %}
+      <div class="sig-current">
+        <img class="sig-preview" src="/documents/signature.png" alt="Your saved signature">
+        <span class="muted small">{{ signature.display_id }} · version {{ sig_versions }}. Replacing it keeps earlier versions.</span>
+      </div>
+    {% else %}
+      <p class="muted small">No signature saved yet. It's stored encrypted as SIG-001 and used when you sign an I-20.</p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="sub-section" data-filepick>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="upload_sig">
+      <span class="field-label">Upload a photo</span>
+      <div class="file-row">
+        <input class="sr-file" type="file" id="sig-file" name="file" accept="image/png,image/jpeg" required>
+        <label class="btn" for="sig-file">Choose file</label>
+        <span class="muted small file-name" data-default="PNG or JPG, on white paper">PNG or JPG, on white paper</span>
+      </div>
+      <span class="muted small">The white paper is made transparent.</span>
+      <div class="card-actions"><button class="btn primary" type="submit" disabled>Upload signature</button></div>
+    </form>
+
+    <form method="post" id="draw-form" class="sub-section">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="draw_sig">
+      <span class="field-label">Or draw it</span>
+      <canvas id="sig-pad" width="600" height="200" aria-label="Signature drawing area"></canvas>
+      <input type="hidden" name="signature" id="sig-data">
+      <div class="card-actions"><button class="btn" type="button" id="sig-clear">Clear</button><button class="btn primary" type="submit">Save drawn signature</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/sign.js"></script><script src="/static/filepick.js"></script>{% endblock %}

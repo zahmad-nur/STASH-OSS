@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Overview · STASH{% endblock %}
+{% block program_end %}
+  {% if end_card %}
+  <div class="end-card"><span class="eyebrow rust">PROGRAM END</span><span class="end-date">{{ end_card.date }}</span><span class="small rust">{{ end_card.note }}</span></div>
+  {% endif %}
+{% endblock %}
+{% block content %}
+{% if msg %}<p class="notice">{{ msg }}</p>{% endif %}
+
+{% if phase %}
+<section class="phase">
+  <div>
+    <span class="eyebrow light">CURRENT PHASE · BASED ON YOUR DOCUMENTS</span>
+    <h2>{{ phase.title }}</h2>
+    <p>{{ phase.line }}</p>
+  </div>
+  <div class="phase-side">
+    {% if phase.work %}<span class="tag on">Work authorized</span>{% elif phase.enrolled %}<span class="tag on">Enrolled</span>{% else %}<span class="tag off">Not enrolled</span>{% endif %}
+    <a href="/documents/{{ current.doc.id }}/review">Not right? Correct it</a>
+  </div>
+</section>
+{% endif %}
+
+{% if contact or study %}
+<div class="info-cards">
+  {% if contact %}
+  <section class="info-card contact">
+    <span class="eyebrow">SCHOOL CONTACT · FROM YOUR I-20</span>
+    <span class="info-title">{{ contact.name }}</span>
+    <span class="info-sub">{% if contact.title %}{{ contact.title }} · {% endif %}{{ contact.school }}</span>
+  </section>
+  {% endif %}
+  {% if study %}
+  <section class="info-card study" style="--bg: {{ study.bg }}; --ink: {{ study.ink }}; --sub: {{ study.sub }}">
+    <span class="eyebrow">FIELD OF STUDY{% if study.level and study.level != "Other program" %} · {{ study.level|upper }}{% endif %}</span>
+    <div class="majors">
+      {% for m in study.majors %}
+      <div class="major"><span class="info-title">{{ m.name }}</span><span class="mono small">{% if m.cip %}CIP {{ m.cip }} · {% endif %}Major {{ m.n }}</span></div>
+      {% endfor %}
+    </div>
+    {% if study.stem_note %}<span class="small">STEM OPT needs your degree's CIP code to be on the DHS STEM list.</span>{% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+
+<form class="upload" id="upload-form" method="post" action="/documents/upload" enctype="multipart/form-data">
+  {% csrf_token %}
+  <span class="upload-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg></span>
+  <span class="upload-text">
+    <strong>Upload an I-20</strong>
+    <span class="muted" id="upload-status">Drop a PDF or photo here, then confirm the details are correct.</span>
+  </span>
+  <span class="upload-actions">
+    <input class="sr-file" type="file" id="upload-input" name="file" accept=".pdf,image/jpeg,image/png" required>
+    <label class="btn" for="upload-input">Choose file</label>
+    <button class="btn dark" type="submit" id="upload-btn" disabled>Upload</button>
+  </span>
+</form>
+
+<section>
+  <div class="section-head"><h2>Important Dates at a Glance</h2><span class="eyebrow">BASED ON YOUR DOCUMENTS</span></div>
+  {% if cards %}
+  <div class="date-grid">
+    {% for c in cards %}
+    {% if c.kind == "travel" and c.missing %}
+    <div class="date-card travel none">
+      <div class="date-head"><span>Travel Signature</span><span class="count expired">None yet</span></div>
+      <div class="date-big">Not signed</div>
+      <div class="muted small">No travel signature on your current I-20. A signature on an older I-20 doesn't carry over. Ask your DSO before you travel.</div>
+    </div>
+    {% elif c.kind == "travel" %}
+    <div class="date-card travel">
+      <div class="date-head"><span>Travel Signature Expires</span><span class="count {% if c.expired %}expired{% endif %}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ c.tag }}</span></div>
+      <div class="date-big">{{ c.expires }}</div>
+      <div class="bar"><div style="width: {{ c.pct }}%"></div></div>
+      <div class="bar-labels"><span>{{ c.signed }}</span><span>{{ c.pct }}% used</span></div>
+      <div class="muted small">Signed {{ c.signed }} on {% if c.on_current %}your latest I-20{% else %}{{ c.source }}{% endif %}</div>
+    </div>
+    {% else %}
+    <div class="date-card work" style="--c: {{ c.color }}; --t: {{ c.tint }}">
+      <div class="date-head"><span>{{ c.type }} – Work Authorization Ends</span><span class="count {% if c.expired %}expired{% endif %}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>{{ c.tag }}</span></div>
+      <div class="date-big">{{ c.ends }}</div>
+      <div class="bar"><div style="width: {{ c.pct }}%"></div></div>
+      <div class="bar-labels"><span>{{ c.start }}</span><span>{{ c.pct }}% used</span></div>
+      {% if c.employer %}<div class="muted small">{{ c.employer }}</div>{% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No dates yet. They appear here as your documents include them.</p>
+  {% endif %}
+</section>
+
+<div class="docs-row">
+<section class="card docs-card">
+  <div class="section-head"><h2>Your Documents</h2><a href="/documents/">All documents</a></div>
+  {% if doc_rows %}
+  <div class="table-wrap">
+  <table class="list docs">
+    <thead><tr><th class="c-type">Type</th><th class="c-issued">Issued / entered</th><th>Description</th><th class="c-dates">Important Dates</th><th class="c-status">Status</th></tr></thead>
+    <tbody>
+    {% for r in doc_rows %}
+      <tr>
+        <td class="c-type"><a href="/documents/{{ r.record.doc.id }}/" title="{{ r.record.display_id }}">{{ r.type }}</a></td>
+        <td class="mono">{{ r.issued }}</td>
+        <td>{{ r.description }}</td>
+        <td><div class="mono">{{ r.dates }}</div><div class="muted small">{{ r.label }}</div></td>
+        <td>{% if r.status == "Current" %}<span class="tag on small-tag">Current</span>{% else %}<span class="muted">{{ r.status }}</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">Upload your first I-20 above to get started.</p>
+  {% endif %}
+</section>
+{% if i20_card %}
+<section class="i20-card">
+  <span class="eyebrow">CURRENT I-20</span>
+  <h2>Issued {{ i20_card.issued }}</h2>
+  {% for row in i20_card.rows %}
+  <div class="kv">
+    <span class="k">{{ row.label }}</span>
+    <span class="v">
+      {% if row.full %}
+        <span class="reveal"><span class="mono" data-masked="{{ row.value }}" data-full="{{ row.full }}">{{ row.value }}</span><button type="button" class="reveal-btn" aria-label="Show full {{ row.label }}">Show</button></span>
+      {% else %}
+        <span class="{% if row.mono %}mono{% endif %}">{{ row.value }}</span>
+      {% endif %}
+      {% if row.note %}<span class="v-note">{{ row.note }}</span>{% endif %}
+    </span>
+  </div>
+  {% endfor %}
+  <div class="i20-actions"><a class="btn primary big" href="/documents/{{ i20_card.doc.id }}/">Open document</a></div>
+</section>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/upload.js"></script><script src="/static/reveal.js"></script>{% endblock %}

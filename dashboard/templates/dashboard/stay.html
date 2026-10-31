@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}My Stay · STASH{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head"><h2>My Stay in the US</h2><span class="eyebrow">BASED ON YOUR DOCUMENTS</span></div>
+  {% if has_data %}
+  <div class="table-wrap">
+    <div class="timeline">
+      <div class="tl-today-label{% if today_left > 92 %} end{% endif %}" style="left: {{ today_left }}%">TODAY</div>
+      <div class="tl-bar">
+        {% for s in segments %}<div class="tl-seg" style="left: {{ s.left }}%; width: {{ s.width }}%; background: {{ s.color }}" title="{{ s.tip }}"></div>{% endfor %}
+        {% for m in markers %}<div class="tl-marker{% if m.dark %} dark{% endif %}" style="left: {{ m.left }}%" title="{{ m.tip }}"></div>{% endfor %}
+        <div class="tl-today" style="left: {{ today_left }}%"></div>
+      </div>
+      <div class="tl-years">{% for y in years %}<span style="left: {{ y.left }}%">{{ y.label }}</span>{% endfor %}</div>
+    </div>
+  </div>
+  <div class="legend">
+    {% for l in legend %}<span><i style="background: {{ l.color }}"></i>{{ l.name }}</span>{% endfor %}
+    {% if markers %}<span><i class="marker-key"></i>US entry</span>{% endif %}
+  </div>
+  <p class="muted small">{{ range }}. Hover a segment for its dates.</p>
+  {% else %}
+  <p class="muted">Your timeline appears once an I-20 with program dates is saved.</p>
+  {% endif %}
+</section>
+<div class="disclaimer">D/S rules change often. Check current grace periods and other dates on the <a href="https://www.uscis.gov/" target="_blank" rel="noopener noreferrer">official USCIS website</a>.</div>
+{% endblock %}

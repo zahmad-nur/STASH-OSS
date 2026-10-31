@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Review {{ doc.display_id }}{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h1>Check what we read from {{ doc.display_id }}</h1>
+  <span class="eyebrow">{% if doc.status == "draft" %}NOTHING IS SAVED UNTIL YOU PRESS SAVE{% else %}EDITING A SAVED DOCUMENT{% endif %}</span>
+</div>
+{% if dup %}<p class="notice">This exact file was already uploaded. You're looking at that copy.</p>{% endif %}
+
+<div class="split">
+  <div class="card viewer">
+    <a class="small" href="{% if current %}/documents/{{ doc.id }}/file/{{ current.number }}{% else %}{{ file_url }}{% endif %}" target="_blank" rel="noopener">Open in a new tab</a>
+    {% if mime == "application/pdf" %}
+      <iframe src="{{ file_url }}" title="{{ doc.display_id }} original"></iframe>
+    {% else %}
+      <img src="{{ file_url }}" alt="{{ doc.display_id }} original">
+    {% endif %}
+  </div>
+
+  <form method="post" class="card review" id="review-form" data-draft="{% if doc.status == "draft" %}1{% endif %}">
+    {% csrf_token %}
+    <div class="checks">
+      {% for key, c in checks.items %}
+        <div class="check {{ c.status }}">
+          <span class="check-name">{% if key == "dso_signature" %}DSO signature{% elif key == "student_signature" %}Student signature{% else %}Issue date{% endif %}</span>
+          <span class="check-status">{% if c.status == "found" %}Found{% elif c.status == "not_detected" %}Not found{% else %}Can't tell{% endif %}</span>
+          <span class="muted small">{{ c.detail }}</span>
+        </div>
+      {% endfor %}
+    </div>
+    {% for w in warnings %}<p class="warn">{{ w }}</p>{% endfor %}
+
+    {% for r in rows %}{% if not r.extra %}
+    <div class="field-row {{ r.confidence }}">
+      <label for="f-{{ r.name }}">{{ r.label }}
+        <span class="conf">{% if r.confidence == "read" %}Read{% elif r.confidence == "check" %}Check{% elif r.confidence == "edited" %}Edited{% elif r.confidence == "blank" %}Blank{% else %}Missing{% endif %}</span>
+      </label>
+      {% if r.kind == "date" %}
+        <input id="f-{{ r.name }}" type="date" name="{{ r.name }}" value="{{ r.value }}">
+      {% elif r.kind == "dates" %}
+        <input id="f-{{ r.name }}" name="{{ r.name }}" value="{{ r.value }}" placeholder="YYYY-MM-DD, YYYY-MM-DD">
+      {% else %}
+        <input id="f-{{ r.name }}" name="{{ r.name }}" value="{{ r.value }}">
+      {% endif %}
+      {% if r.reason and r.confidence != "read" %}<span class="muted small">{{ r.reason }}</span>{% endif %}
+      <details {% if r.doc_wrong %}open{% endif %}>
+        <summary>Document is wrong</summary>
+        <label class="inline"><input type="checkbox" name="{{ r.name }}__wrong" {% if r.doc_wrong %}checked{% endif %}> The I-20 itself has an error here. Keep what's printed above and record the correct value.</label>
+        <input name="{{ r.name }}__corrected" value="{{ r.corrected }}" placeholder="Correct value">
+        <input name="{{ r.name }}__note" value="{{ r.note }}" placeholder="Note (e.g. DSO typo)">
+      </details>
+    </div>
+    {% endif %}{% endfor %}
+    <details class="extras">
+      <summary>More from page 1 <span class="muted small">(admission number, school code, school contact, majors)</span></summary>
+    {% for r in rows %}{% if r.extra %}
+    <div class="field-row {{ r.confidence }}">
+      <label for="f-{{ r.name }}">{{ r.label }}
+        <span class="conf">{% if r.confidence == "read" %}Read{% elif r.confidence == "check" %}Check{% elif r.confidence == "edited" %}Edited{% elif r.confidence == "blank" %}Blank{% else %}Missing{% endif %}</span>
+      </label>
+      {% if r.kind == "date" %}
+        <input id="f-{{ r.name }}" type="date" name="{{ r.name }}" value="{{ r.value }}">
+      {% elif r.kind == "dates" %}
+        <input id="f-{{ r.name }}" name="{{ r.name }}" value="{{ r.value }}" placeholder="YYYY-MM-DD, YYYY-MM-DD">
+      {% else %}
+        <input id="f-{{ r.name }}" name="{{ r.name }}" value="{{ r.value }}">
+      {% endif %}
+      {% if r.reason and r.confidence != "read" %}<span class="muted small">{{ r.reason }}</span>{% endif %}
+      <details {% if r.doc_wrong %}open{% endif %}>
+        <summary>Document is wrong</summary>
+        <label class="inline"><input type="checkbox" name="{{ r.name }}__wrong" {% if r.doc_wrong %}checked{% endif %}> The I-20 itself has an error here. Keep what's printed above and record the correct value.</label>
+        <input name="{{ r.name }}__corrected" value="{{ r.corrected }}" placeholder="Correct value">
+        <input name="{{ r.name }}__note" value="{{ r.note }}" placeholder="Note (e.g. DSO typo)">
+      </details>
+    </div>
+    {% endif %}{% endfor %}
+    </details>
+
+    <fieldset class="work {{ work.confidence }}">
+      <legend>Employment authorization
+        <span class="conf">{% if work.confidence == "read" %}Read{% elif work.confidence == "check" %}Check{% elif work.confidence == "edited" %}Edited{% else %}Missing{% endif %}</span>
+      </legend>
+      <div class="yesno">
+        <label><input type="radio" name="work_auth" value="yes" {% if work.value == "yes" %}checked{% endif %}> Yes</label>
+        <label><input type="radio" name="work_auth" value="no" {% if work.value != "yes" %}checked{% endif %}> No</label>
+      </div>
+      {% if work.reason and work.confidence != "edited" %}<span class="muted small">{{ work.reason }}</span>{% endif %}
+
+      <div id="work-rows" {% if work.value != "yes" %}hidden{% endif %}>
+        <div class="work-row">
+          <div class="work-grid">
+            <label>Employment type
+              <select name="work_type">
+                <option value="">Choose…</option>
+                {% for t in work_types %}<option value="{{ t }}" {% if auth.type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+              </select></label>
+            <label>Employment start<input type="date" name="work_start" value="{{ auth.start }}"></label>
+            <label>Employment end<input type="date" name="work_end" value="{{ auth.end }}"></label>
+          </div>
+          <span class="work-sub">Employer</span>
+          <div class="work-grid">
+            <label>Employer type
+              <select name="work_employer_type">
+                <option value="">—</option>
+                {% for t in employer_types %}<option value="{{ t }}" {% if auth.employer_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+              </select></label>
+            <label class="span-2">Employer name<input name="work_employer_name" value="{{ auth.employer_name }}" maxlength="120"></label>
+            <label>Employer start<input type="date" name="work_employer_start" value="{{ auth.employer_start }}"></label>
+            <label>Employer end<input type="date" name="work_employer_end" value="{{ auth.employer_end }}"></label>
+            <span></span>
+            <label>City<input name="work_city" value="{{ auth.city }}" maxlength="120"></label>
+            <label>State<input name="work_state" value="{{ auth.state }}" maxlength="40"></label>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="save-bar">
+      <span class="save-state" id="save-state">{% if doc.status == "draft" %}Not saved yet. Check the fields, then save.{% else %}No changes yet.{% endif %}</span>
+      <span class="actions">
+        <button class="btn" name="action" value="cancel" type="submit" formnovalidate>{% if doc.status == "draft" %}Cancel and delete upload{% else %}Cancel{% endif %}</button>
+        <button class="btn primary" name="action" value="save" type="submit">{% if doc.status == "draft" %}Save I-20{% else %}Save changes{% endif %}</button>
+      </span>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/review.js"></script>{% endblock %}

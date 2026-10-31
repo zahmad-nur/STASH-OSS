@@ -1,0 +1,8 @@
+{% extends "plain.html" %}
+{% block title %}Your recovery key{% endblock %}
+{% block body %}
+<h1>Save your recovery key</h1>
+<p>This is the only way back in if you forget your passphrase. It is shown once. Write it down or print it and keep it somewhere safe and offline, not in a note on this computer.</p>
+<p class="recovery">{{ recovery }}</p>
+<a class="btn primary" href="/">I've saved it, continue</a>
+{% endblock %}

@@ -1,0 +1,33 @@
+name: Use case or idea
+description: Tell us your situation and what you'd want STASH to track
+labels: ["use case"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        STASH is shaped by real student situations. No personal details needed: describe your situation in general terms.
+  - type: textarea
+    id: situation
+    attributes:
+      label: Your situation
+      placeholder: "e.g. I'm on STEM OPT and my employer moved offices, so I got a new I-20. I want to see which I-20 was valid when I travelled."
+    validations:
+      required: true
+  - type: textarea
+    id: need
+    attributes:
+      label: What would help
+      description: What you'd want STASH to show, remind you of, or keep track of.
+    validations:
+      required: true
+  - type: dropdown
+    id: documents
+    attributes:
+      label: Documents involved
+      multiple: true
+      options:
+        - I-20
+        - I-94
+        - F-1 visa page
+        - EAD card
+        - Other

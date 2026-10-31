@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Documents · STASH{% endblock %}
+{% block content %}
+<div class="section-head">
+  <h1>Documents</h1>
+  <nav class="type-nav" aria-label="Document types">
+    <a href="#i20s" class="on">I-20s · {{ i20s|length }}</a>
+    <a href="#signature">Signature · {{ sigs|length }}</a>
+  </nav>
+</div>
+{% if msg == "deleted" %}<p class="notice">Document deleted.</p>{% endif %}
+
+<section class="card" id="i20s">
+  <div class="section-head"><h2>I-20s</h2><span class="eyebrow">NEWEST FIRST</span></div>
+  {% if i20s %}
+  <div class="table-wrap">
+  <table class="list docs-full">
+    <thead><tr><th class="c-id">ID</th><th class="c-issued">Issued</th><th>Reason</th><th>Level</th><th>School</th><th class="c-emp">Employment</th><th class="c-dates">Important Dates</th><th class="c-status">Status</th></tr></thead>
+    <tbody>
+    {% for r in i20s %}
+      <tr>
+        <td><a class="mono" href="/documents/{{ r.record.doc.id }}/">{{ r.record.display_id }}</a>
+          {% if r.flags %}<div class="small rust">{{ r.flags }} flag{{ r.flags|pluralize }}</div>{% else %}<div class="small muted">{{ r.versions }} version{{ r.versions|pluralize }}</div>{% endif %}</td>
+        <td class="mono">{{ r.issued }}</td>
+        <td>{{ r.record.reason|default:"—" }}</td>
+        <td>{{ r.level|default:"—" }}</td>
+        <td>{{ r.school|default:"—" }}</td>
+        <td>{% if r.employment %}<span class="emp">{% if r.color %}<i style="background: {{ r.color }}"></i>{% endif %}{{ r.employment }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td><div class="mono small-mono">{{ r.dates }}</div><div class="muted small">{% if r.employment %}Authorization{% else %}Program{% endif %}</div></td>
+        <td>{% if r.status == "Current" %}<span class="tag on small-tag">Current</span>{% else %}<span class="muted">{{ r.status }}</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No I-20s yet. Upload one from the Overview.</p>
+  {% endif %}
+</section>
+
+
+<section class="card" id="signature">
+  <h2>Signature</h2>
+  {% if sigs %}
+  <div class="table-wrap">
+  <table class="list docs-full">
+    <thead><tr><th class="c-id">ID</th><th>Last updated</th><th>Used on</th><th class="c-status">Status</th></tr></thead>
+    <tbody>
+    {% for s in sigs %}
+      <tr>
+        <td><a class="mono" href="/documents/{{ s.doc.id }}/">{{ s.doc.display_id }}</a><div class="small muted">{{ s.versions }} version{{ s.versions|pluralize }}</div></td>
+        <td class="mono">{{ s.updated }}</td>
+        <td class="mono">{{ s.used_on }}</td>
+        <td>{% if s.status == "Current" %}<span class="tag on small-tag">Current</span>{% else %}<span class="muted">{{ s.status }}</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted small">No signature saved yet. Add one under Settings.</p>
+  {% endif %}
+</section>
+{% endblock %}

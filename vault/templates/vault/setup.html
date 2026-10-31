@@ -1,0 +1,15 @@
+{% extends "plain.html" %}
+{% block title %}Set up STASH{% endblock %}
+{% block body %}
+<h1>Set up your vault</h1>
+<p class="muted">Your passphrase encrypts everything STASH stores. It never leaves this computer and can't be reset by anyone, so pick one you'll remember.</p>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" class="stack">
+  {% csrf_token %}
+  <label>Passphrase<input type="password" name="passphrase" minlength="{{ min }}" required autocomplete="new-password"></label>
+  <label>Confirm passphrase<input type="password" name="confirm" minlength="{{ min }}" required autocomplete="new-password"></label>
+  <label>First name <span class="muted">(optional, for the greeting)</span><input name="name" maxlength="60"></label>
+  <label>Greeting <span class="muted">(optional. Leave blank and STASH picks one from the country on your I-20)</span><input name="greeting" maxlength="60"></label>
+  <button class="btn primary" type="submit">Create vault</button>
+</form>
+{% endblock %}

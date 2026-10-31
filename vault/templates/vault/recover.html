@@ -1,0 +1,15 @@
+{% extends "plain.html" %}
+{% block title %}Recover access{% endblock %}
+{% block body %}
+<h1>Recover access</h1>
+<p class="muted">Enter the recovery key you saved during setup, then choose a new passphrase.</p>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+<form method="post" class="stack">
+  {% csrf_token %}
+  <label>Recovery key<input name="recovery" required autocomplete="off" spellcheck="false"></label>
+  <label>New passphrase<input type="password" name="passphrase" minlength="{{ min }}" required autocomplete="new-password"></label>
+  <label>Confirm new passphrase<input type="password" name="confirm" minlength="{{ min }}" required autocomplete="new-password"></label>
+  <button class="btn primary" type="submit">Recover</button>
+</form>
+<p class="muted"><a href="/unlock">Back to unlock</a></p>
+{% endblock %}

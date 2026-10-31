@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Look Up · STASH{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="section-head"><h2>What Was True on a Given Day?</h2><span class="eyebrow">BASED ON YOUR DOCUMENTS</span></div>
+  <form method="get" class="lookup-form">
+    <label for="on">On</label>
+    <input id="on" type="date" name="date" value="{{ date }}" required>
+    <button class="btn primary" type="submit">Look up</button>
+  </form>
+  {% if not has_data %}
+    <p class="muted">Save an I-20 first.</p>
+  {% elif result %}
+    <div class="date-grid">
+      <div class="lookup-card">
+        <span class="eyebrow">I-20 IN EFFECT</span>
+        {% if result.doc %}
+          <strong><a class="mono" href="/documents/{{ result.doc.doc.id }}/">{{ result.doc.display_id }}</a>, issued {{ result.issued }}</strong>
+          <span class="muted small">{{ result.doc.reason|default:"" }}</span>
+        {% else %}<strong>No I-20 issued yet on {{ result.label }}</strong>{% endif %}
+      </div>
+      {% if result.doc %}
+      <div class="lookup-card">
+        <span class="eyebrow">PROGRAM</span>
+        <strong>{{ result.doc.level|default:"Program" }} · {{ result.doc.school|default:"" }}</strong>
+        <span class="mono small">{{ result.start }} – {{ result.end }}</span>
+        {% if result.program %}<span class="muted small">{{ result.program }}</span>{% endif %}
+      </div>
+      {% endif %}
+      <div class="lookup-card">
+        <span class="eyebrow">WORK AUTHORIZATION</span>
+        {% if result.work %}
+          <strong>{{ result.work.type }}{% if result.work.employer %} · {{ result.work.employer }}{% endif %}</strong>
+          <span class="mono small">{{ result.work.start }} – {{ result.work.end }}</span>
+          <span class="muted small">On {{ result.work.doc }}</span>
+        {% else %}<strong>None on {{ result.label }}</strong>{% endif %}
+      </div>
+      <div class="lookup-card">
+        <span class="eyebrow">TRAVEL SIGNATURE</span>
+        {% if result.sig %}
+          <strong>Valid: signed {{ result.sig.date }}</strong>
+          <span class="muted small">On {{ result.sig.doc }}, good until {{ result.sig.expires }}</span>
+        {% else %}<strong>No valid travel signature on {{ result.label }}</strong>{% endif %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
