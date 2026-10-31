@@ -57,7 +57,7 @@ disk space. STASH is written in Python, so there's nothing to compile: you insta
 **macOS and Linux**
 
 ```bash
-git clone https://github.com/<your-username>/STASH-OSS.git
+git clone https://github.com/zahmad-nur/STASH-OSS.git
 cd STASH-OSS
 python3 -m venv .venv
 source .venv/bin/activate
@@ -69,7 +69,7 @@ python manage.py runserver
 **Windows (PowerShell)**
 
 ```powershell
-git clone https://github.com/<your-username>/STASH-OSS.git
+git clone https://github.com/zahmad-nur/STASH-OSS.git
 cd STASH-OSS
 py -3 -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -216,8 +216,15 @@ Never attach real documents, or screenshots of them, to an issue. Use the demo o
 ## Support
 
 STASH is a personal open-source project, maintained in spare time. Issues are read and answered on a best-effort
-basis, with no guaranteed response time. It is not legal advice and comes with no warranty (see the license).
+basis, with no guaranteed response time. It is not legal advice and comes with no warranty (see the license, sections 15 and 16).
 
 ## License
 
-[MIT](LICENSE)
+Copyright (C) 2026 Zahra Ahmad.
+
+STASH is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only). You're free to use,
+study, change and share it. Running it on your own computer asks nothing of you.
+
+If you build on STASH and share your version, or run it as a website or app that other people use, you must publish
+your full modified source code to those users under the same license. Anything built on STASH stays open, so its
+improvements can flow back to everyone.

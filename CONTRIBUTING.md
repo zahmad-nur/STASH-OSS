@@ -30,6 +30,11 @@ generator in `scripts/make_sample_i20.py`.
 - If it touches how a field is read, include the masked `structure_check` output of the layout it handles.
 - Dependencies are pinned. If you add or update one, say why.
 
+## License of contributions
+
+STASH is licensed under the AGPL-3.0. By opening a pull request, you agree that your contribution is licensed
+under the same terms.
+
 ## Security
 
 Found a vulnerability? Please report it privately, not in an issue or pull request. See [SECURITY.md](SECURITY.md).
