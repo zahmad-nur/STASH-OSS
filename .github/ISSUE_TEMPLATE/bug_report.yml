@@ -1,0 +1,38 @@
+name: Bug report
+description: Something doesn't work, or STASH read a field wrong
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never attach a real I-20, a real SEVIS ID or a screenshot of your documents.**
+        Use the demo (`python manage.py demo`) or the masked output of `python manage.py structure_check`.
+        Security problem? Don't file it here: report it privately from the Security tab (see SECURITY.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what STASH did instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `python manage.py demo --student priya`
+        2. Open the Overview
+        3. ...
+  - type: textarea
+    id: structure
+    attributes:
+      label: Masked structure check (if a field was misread)
+      description: Paste the output of `python manage.py structure_check your-i20.pdf`. Values are masked.
+      render: text
+  - type: input
+    id: env
+    attributes:
+      label: Your setup
+      placeholder: "macOS 15, Python 3.12, STASH from main on 2026-10-30"
+    validations:
+      required: true

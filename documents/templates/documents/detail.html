@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.display_id }}{% endblock %}
+{% block content %}
+<a class="back" href="/documents/">&larr; All documents</a>
+<div class="section-head">
+  <h1>{{ doc.display_id }} <span class="muted">{{ doc.type_label }}</span></h1>
+  <div class="version-nav">
+    {% if prev %}<a class="btn" href="?v={{ prev }}" aria-label="Previous version">&larr;</a>{% else %}<span class="btn disabled" aria-hidden="true">&larr;</span>{% endif %}
+    <span class="version-label">v{{ current.number }} of {{ versions|length }} · {% if current.kind == "signed" %}signed copy{% else %}as uploaded{% endif %}</span>
+    {% if next %}<a class="btn" href="?v={{ next }}" aria-label="Next version">&rarr;</a>{% else %}<span class="btn disabled" aria-hidden="true">&rarr;</span>{% endif %}
+  </div>
+</div>
+{% if dup %}<p class="notice">This exact file is already saved as {{ doc.display_id }}.</p>{% endif %}
+{% if saved %}
+<div class="notice done">
+  <span>{% if saved == "new" %}Saved. {{ doc.display_id }} is stored encrypted on this computer.{% else %}Changes saved to {{ doc.display_id }}.{% endif %}</span>
+  <span class="actions"><a class="btn primary" href="/">Back to Overview</a><a class="btn" href="/documents/">All documents</a></span>
+</div>
+{% endif %}
+{% if signed %}
+<div class="notice done">
+  <span>Signed. The signed copy is saved as v{{ versions|length }}, and your original is still v1 behind the back arrow.</span>
+  <span class="actions"><a class="btn primary" href="/">Back to Overview</a><a class="btn" href="/documents/">All documents</a></span>
+</div>
+{% endif %}
+
+<div class="split">
+  <div class="card viewer">
+    <a class="small" href="{% if current %}/documents/{{ doc.id }}/file/{{ current.number }}{% else %}{{ file_url }}{% endif %}" target="_blank" rel="noopener">Open in a new tab</a>
+    {% if current.mime == "application/pdf" %}
+      <iframe src="/documents/{{ doc.id }}/file/{{ current.number }}" title="{{ doc.display_id }} v{{ current.number }}"></iframe>
+    {% else %}
+      <img src="/documents/{{ doc.id }}/file/{{ current.number }}" alt="{{ doc.display_id }} v{{ current.number }}">
+    {% endif %}
+  </div>
+
+  <div class="card">
+    {% if rows %}
+      <div class="checks">
+        {% for key, c in checks.items %}
+          <div class="check {{ c.status }}">
+            <span class="check-name">{% if key == "dso_signature" %}DSO signature{% elif key == "student_signature" %}Student signature{% else %}Issue date{% endif %}</span>
+            <span class="check-status">{% if c.status == "found" %}Found{% elif c.status == "not_detected" %}Not found{% else %}Can't tell{% endif %}</span>
+            <span class="muted small">{{ c.detail }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% for w in warnings %}<p class="warn">{{ w }}</p>{% endfor %}
+      {% if sign_state == "on_document" %}<p class="muted small">Your signature is already on this I-20, so there's nothing to sign.</p>{% endif %}
+      <table class="fields">
+        <tbody>
+        {% for r in rows %}
+          <tr>
+            <th scope="row">{{ r.label }}</th>
+            <td>{{ r.value|default:"—" }}
+              {% if r.wrong %}<div class="wrong">Printed as "{{ r.printed }}"{% if r.note %} · {{ r.note }}{% endif %}</div>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+          <tr>
+            <th scope="row">Employment authorization</th>
+            <td>{% if work %}Yes{% elif work_known %}No{% else %}—{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+      {% for a in work %}
+      <div class="work-view">
+        <strong>{{ a.type }}</strong> <span class="mono small">{{ a.start|default:"—" }} – {{ a.end|default:"—" }}</span>
+        {% if a.employer_name or a.employer_type or a.city %}
+        <span class="small">{{ a.employer_name|default:"Employer" }}{% if a.employer_type %} · {{ a.employer_type }}{% endif %}{% if a.city or a.state %} · {{ a.city }}{% if a.city and a.state %}, {% endif %}{{ a.state }}{% endif %}</span>
+        {% if a.employer_start or a.employer_end %}<span class="mono small muted">Employer {{ a.employer_start|default:"—" }} – {{ a.employer_end|default:"—" }}</span>{% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+      <div class="actions">
+        {% if can_sign and sign_state == "needed" %}<a class="btn primary" href="/documents/{{ doc.id }}/sign">Sign this I-20</a>{% endif %}
+        {% if can_sign and sign_state == "in_app" %}<a class="btn" href="/documents/{{ doc.id }}/sign">Redo signature</a>{% endif %}
+        <a class="btn" href="/documents/{{ doc.id }}/review">Edit fields</a>
+      </div>
+    {% else %}
+      <p class="muted">Saved signature, used when you sign an I-20 in STASH.</p>
+    {% endif %}
+    <details class="danger">
+      <summary>Delete this document</summary>
+      <p class="muted small">Deletes every version and everything read from it. This can't be undone.</p>
+      <form method="post" action="/documents/{{ doc.id }}/delete">{% csrf_token %}<button class="btn danger" type="submit">Delete {{ doc.display_id }}</button></form>
+    </details>
+  </div>
+</div>
+{% endblock %}

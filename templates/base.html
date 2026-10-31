@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}STASH{% endblock %}</title>
+<link rel="stylesheet" href="/static/stash.css?v=17">
+{% block head %}{% endblock %}
+</head>
+<body>
+{% if demo %}<div class="demo-banner" role="note">Demo mode</div>{% endif %}
+<div class="page">
+  <header class="top">
+    <div class="who">
+      <a class="brand" href="/"><img src="/static/logo-mark.png" alt=""><span>stash</span></a>
+      <div class="greeting"><bdi lang="{{ greeting.lang }}" dir="{{ greeting.dir }}" title="{{ greeting.latin }}">{{ greeting.text }}</bdi>{% if profile_name %}, {{ profile_name }}{% endif %}</div>
+    </div>
+    <div class="status-cards">
+      {% block program_end %}{% endblock %}
+      <div class="f1-card"><span class="eyebrow light">STATUS</span><span class="f1">F-1</span></div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Pages">
+    <a href="/" {% if nav == "overview" %}aria-current="page"{% endif %}>Overview</a>
+    <a href="/stay" {% if nav == "stay" %}aria-current="page"{% endif %}>My Stay</a>
+    <a href="/lookup" {% if nav == "lookup" %}aria-current="page"{% endif %}>Look Up</a>
+    <a href="/documents/" {% if nav == "documents" %}aria-current="page"{% endif %}>Documents</a>
+    <a href="/settings" {% if nav == "settings" %}aria-current="page"{% endif %}>Settings</a>
+    <form method="post" action="/lock" class="lock-form">{% csrf_token %}<button class="link-btn" type="submit">Lock</button></form>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+  <footer class="footer">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+    <span>Your encrypted files are stored on this computer at <code class="path">{{ data_dir }}</code>. For more on what's in that folder and how to delete it, see “Where your data lives” in README.md.</span>
+  </footer>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

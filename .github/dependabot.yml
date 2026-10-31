@@ -1,0 +1,12 @@
+# Opens pull requests for dependency updates. Nothing is merged automatically:
+# each update is reviewed and tested before it lands.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

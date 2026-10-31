@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Sign {{ doc.display_id }}{% endblock %}
+{% block content %}
+<a class="back" href="/documents/{{ doc.id }}/">&larr; Back to {{ doc.display_id }}</a>
+<div class="section-head">
+  <h1>Sign {{ doc.display_id }}</h1>
+  <span class="eyebrow">THE SIGNED COPY BECOMES A NEW VERSION. YOUR ORIGINAL STAYS AS V1</span>
+</div>
+{% if error %}<p class="error">{{ error }}</p>{% endif %}
+{% if digital_dso %}<p class="warn">This I-20 carries the DSO's digital signature. Adding yours changes the file, so PDF viewers may show it as modified after signing. Your original stays untouched as v1.</p>{% endif %}
+
+<form method="post" id="sign-form" class="split">
+  {% csrf_token %}
+  <div class="card">
+    <h2>Place your signature and date</h2>
+    <p class="muted small">{% if located %}Both start on the student signature line.{% else %}STASH couldn't find the student signature line, so start by dragging both into place.{% endif %} Drag them anywhere on page 1.</p>
+    <div class="placer" id="placer" data-page-w="{{ page_w }}" style="aspect-ratio: {{ page_w }} / {{ page_h }}">
+      {% if page %}<img class="page-img" src="data:image/png;base64,{{ page.png }}" alt="Page 1 of {{ doc.display_id }}">{% else %}<div class="page-missing muted">Page preview unavailable</div>{% endif %}
+      <div class="drag sig-box" id="sig-box" style="left: {{ pct.sig_x }}%; top: {{ pct.sig_y }}%; width: {{ pct.sig_w }}%">
+        <img id="sig-img" alt="Your signature" {% if saved %}src="/documents/signature.png"{% endif %}>
+        <span class="drag-hint" id="sig-hint">Signature</span>
+      </div>
+      <div class="drag date-box" id="date-box" style="left: {{ pct.date_x }}%; top: {{ pct.date_y }}%"></div>
+    </div>
+    <label class="inline-range">Signature size <input type="range" id="sig-size" min="0.08" max="0.45" step="0.01" value="{{ place.sig_w }}"></label>
+    <input type="hidden" name="sig_x" id="sig_x" value="{{ place.sig_x }}">
+    <input type="hidden" name="sig_y" id="sig_y" value="{{ place.sig_y }}">
+    <input type="hidden" name="sig_w" id="sig_w" value="{{ place.sig_w }}">
+    <input type="hidden" name="date_x" id="date_x" value="{{ place.date_x }}">
+    <input type="hidden" name="date_y" id="date_y" value="{{ place.date_y }}">
+  </div>
+
+  <div class="card">
+    <h2>Your signature</h2>
+    {% if saved %}
+      <label class="choice"><input type="radio" name="source" value="saved" checked> Use my saved signature ({{ saved.display_id }})
+        <img class="sig-preview" src="/documents/signature.png" alt=""></label>
+      <label class="choice"><input type="radio" name="source" value="draw"> Draw a new one</label>
+    {% else %}
+      <input type="hidden" name="source" value="draw">
+      <p class="muted small">Draw it below, or <a href="/settings">upload a PNG in Settings</a> first.</p>
+    {% endif %}
+    <div id="draw-area" {% if saved %}hidden{% endif %}>
+      <canvas id="sig-pad" width="600" height="200" aria-label="Signature drawing area"></canvas>
+      <input type="hidden" name="signature" id="sig-data">
+      <div class="actions">
+        <button class="btn" type="button" id="sig-clear">Clear</button>
+        {% if saved %}<label class="inline"><input type="checkbox" name="replace_saved"> Save this as my signature</label>{% else %}<span class="muted small">Saved encrypted as SIG-001 for next time.</span>{% endif %}
+      </div>
+    </div>
+    <label class="stack-label">Date next to your signature
+      <input type="date" name="date" id="sign-date" value="{{ today }}" required></label>
+    <p class="muted small">SEVP has allowed electronic signatures on I-20s. Check with your DSO if you're unsure whether they accept one.</p>
+    <button class="btn primary" type="submit">Sign and save as a new version</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="/static/sign.js"></script>{% endblock %}
