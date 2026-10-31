@@ -209,8 +209,6 @@ Never attach real documents, or screenshots of them, to an issue. Use the demo o
 
 - I-94s: entry dates on the timeline, and the Last US Entry card
 - F-1 visa page: visa stamp expiry
-- A Missing tab that points out gaps, such as an I-20 you don't have on file
-- Reading photos and scans (local OCR, never a cloud service)
 - A packaged desktop app
 
 ## Support
